@@ -1,0 +1,100 @@
+class Renderer {
+    constructor() {
+        this.backgroundLayer = document.getElementById('background-layer');
+        this.characterLayer = document.getElementById('character-layer');
+        this.dialogueBox = document.getElementById('dialogue-box');
+        this.speakerName = document.getElementById('speaker-name');
+        this.dialogueText = document.getElementById('dialogue-text');
+        this.nextBtn = document.getElementById('next-btn');
+        this.choicesContainer = document.getElementById('choices-container');
+        this.titleScreen = document.getElementById('title-screen');
+        this.chapterTitle = document.getElementById('chapter-title');
+        this.startBtn = document.getElementById('start-btn');
+    }
+
+    setBackground(imagePath) {
+        this.backgroundLayer.style.backgroundImage = `url('${imagePath}')`;
+    }
+
+    showCharacter(characterId, imagePath) {
+        let charImg = document.getElementById(`char-${characterId}`);
+        if (!charImg) {
+            charImg = document.createElement('img');
+            charImg.id = `char-${characterId}`;
+            charImg.className = 'character hidden';
+            charImg.src = imagePath;
+            this.characterLayer.appendChild(charImg);
+        }
+        // Force reflow
+        void charImg.offsetWidth;
+        charImg.classList.remove('hidden');
+    }
+
+    hideCharacter(characterId) {
+        const charImg = document.getElementById(`char-${characterId}`);
+        if (charImg) {
+            charImg.classList.add('hidden');
+            setTimeout(() => {
+                if (charImg.parentNode) charImg.parentNode.removeChild(charImg);
+            }, 500);
+        }
+    }
+
+    clearCharacters() {
+        this.characterLayer.innerHTML = '';
+    }
+
+    showDialogue(speaker, text) {
+        this.dialogueBox.classList.remove('hidden');
+        this.speakerName.textContent = speaker;
+        this.dialogueText.textContent = '';
+        this.typeWriter(text);
+    }
+
+    typeWriter(text, index = 0) {
+        if (index < text.length) {
+            this.dialogueText.textContent += text.charAt(index);
+            setTimeout(() => this.typeWriter(text, index + 1), 20); // Typing speed
+        } else {
+            this.nextBtn.classList.remove('hidden');
+        }
+    }
+
+    hideDialogue() {
+        this.dialogueBox.classList.add('hidden');
+        this.nextBtn.classList.add('hidden');
+    }
+
+    showChoices(choices, callback) {
+        this.choicesContainer.innerHTML = '';
+        this.choicesContainer.classList.remove('hidden');
+        this.hideDialogue();
+
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = choice.text;
+            btn.onclick = () => {
+                this.choicesContainer.classList.add('hidden');
+                callback(choice.nextIndex);
+            };
+            this.choicesContainer.appendChild(btn);
+        });
+    }
+
+    showTitleScreen(onStart) {
+        this.titleScreen.style.display = 'flex';
+        this.startBtn.onclick = () => {
+            this.titleScreen.style.display = 'none';
+            onStart();
+        };
+    }
+
+    showChapterTitle(title, duration = 3000) {
+        this.chapterTitle.textContent = title;
+        this.chapterTitle.classList.add('show');
+        setTimeout(() => {
+            this.chapterTitle.classList.remove('show');
+        }, duration);
+    }
+}
